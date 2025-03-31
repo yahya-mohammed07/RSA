@@ -1,5 +1,4 @@
 import hashlib
-import random
 from math import gcd
 
 
@@ -8,7 +7,6 @@ def string_to_ascii(input_string):
 
 
 def sha256_hash(decimal):
-  """Convert a decimal to its full SHA-256 hash representation as an integer."""
   decimal_bytes = str(decimal).encode()
   sha256 = hashlib.sha256(decimal_bytes).hexdigest()
   hash_int = int(sha256, 16)
@@ -16,7 +14,6 @@ def sha256_hash(decimal):
 
 
 def is_prime(n):
-  """Simple primality test."""
   if n <= 1:
     return False
   if n <= 3:
@@ -50,7 +47,6 @@ def mod_inverse(e, phi):
 
 
 def generate_keys():
-  """Generate RSA public and private keys with medium-sized primes."""
   print("\n--- RSA Key Generation ---")
 
   # 1. Generate two prime numbers p and q

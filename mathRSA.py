@@ -5,6 +5,7 @@ from primeGen import generateLargePrime
 def string_to_ascii(input_string):
   return " ".join(str(ord(char)) for char in input_string)  # Join with spaces
 
+
 def sha256_hash(decimal):
   """Convert a decimal to its SHA-256 hash representation as an integer."""
   decimal_bytes = str(decimal).encode()
