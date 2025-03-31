@@ -1,5 +1,4 @@
 import hashlib
-from decimal import Decimal
 from primeGen import generateLargePrime
 
 
