@@ -3,173 +3,122 @@ from math import gcd
 
 
 def string_to_ascii(input_string):
-  return " ".join(str(ord(char)) for char in input_string)  # Join with spaces
+    ascii_values = [ord(char) for char in input_string]
+    print(f"\n🔹 ASCII Values: {ascii_values}")
+    return " ".join(str(x) for x in ascii_values)
 
 
 def sha256_hash(decimal):
-  decimal_bytes = str(decimal).encode()
-  sha256 = hashlib.sha256(decimal_bytes).hexdigest()
-  hash_int = int(sha256, 16)
-  return hash_int
-
-
-def is_prime(n):
-  if n <= 1:
-    return False
-  if n <= 3:
-    return True
-  if n % 2 == 0 or n % 3 == 0:
-    return False
-  i = 5
-  while i * i <= n:
-    if n % i == 0 or n % (i + 2) == 0:
-      return False
-    i += 6
-  return True
+    decimal_bytes = str(decimal).encode()
+    sha256 = hashlib.sha256(decimal_bytes).hexdigest()
+    hash_int = int(sha256, 16)
+    
+    print(f"\n🔹 SHA-256 Hash (Hex): {sha256}")
+    print(f"🔹 SHA-256 Hash (Decimal): {hash_int}")
+    
+    return hash_int
 
 
 def extended_gcd(a, b):
-  """Extended Euclidean Algorithm to find gcd and coefficients."""
-  if a == 0:
-    return b, 0, 1
-  else:
-    gcd, x, y = extended_gcd(b % a, a)
-    return gcd, y - (b // a) * x, x
+    if a == 0:
+        return b, 0, 1
+    else:
+        gcd, x, y = extended_gcd(b % a, a)
+        return gcd, y - (b // a) * x, x
 
 
 def mod_inverse(e, phi):
-  """Calculate the modular multiplicative inverse of e modulo phi."""
-  gcd, x, y = extended_gcd(e, phi)
-  if gcd != 1:
-    raise ValueError("Modular inverse does not exist")
-  else:
-    return x % phi
+    gcd, x, _ = extended_gcd(e, phi)
+    if gcd != 1:
+        raise ValueError("Modular inverse does not exist")
+    
+    mod_inv = x % phi
+    print(f"\n🔹 Modular Inverse of {e} mod {phi}: {mod_inv}")
+    
+    return mod_inv
 
 
 def generate_keys():
-  print("\n--- RSA Key Generation ---")
+    """Generate RSA public and private keys."""
+    print("\n--- 🔑 RSA Key Generation ---")
 
-  # 1. Generate two prime numbers p and q
-  # For demonstration, use fixed primes to ensure consistency
-  print("Using predetermined prime p...")
-  p = 1009  # Small prime for demonstration
-  print(f"p = {p}")
+    p = 1009  # Prime number
+    q = 1013  # Another prime number
+    print(f"🔹 Prime p: {p}")
+    print(f"🔹 Prime q: {q}")
 
-  print("Using predetermined prime q...")
-  q = 1013  # Small prime for demonstration
-  print(f"q = {q}")
+    n = p * q
+    phi = (p - 1) * (q - 1)
 
-  # 2. Compute n = p * q
-  n = p * q
-  print(f"n = p * q = {n}")
+    print(f"🔹 RSA Modulus (n = p * q): {n}")
+    print(f"🔹 Euler's Totient (φ(n) = (p-1) * (q-1)): {phi}")
 
-  # 3. Compute phi(n) = (p-1) * (q-1)
-  phi = (p - 1) * (q - 1)
-  print(f"φ(n) = (p-1) * (q-1) = {phi}")
+    e = 65537  # Commonly used public exponent
+    if e >= phi:
+        e = 17  # Fallback to a smaller prime
+    while gcd(e, phi) != 1:
+        e += 2
 
-  # 4. Choose e such that 1 < e < phi and gcd(e, phi) = 1
-  e = 65537  # Common choice
-  # If e is too large for our small primes, find a smaller one
-  if e >= phi:
-    e = 17  # Smaller prime commonly used
+    print(f"🔹 Public Exponent (e): {e}")
 
-  # Make sure e is coprime with phi
-  while gcd(e, phi) != 1:
-    e += 2
-  print(f"e = {e}")
+    d = mod_inverse(e, phi)
 
-  # 5. Compute d such that d ≡ e^(-1) (mod phi)
-  d = mod_inverse(e, phi)
-  print(f"d = e^(-1) mod φ(n) = {d}")
+    print(f"🔹 Private Exponent (d): {d}")
 
-  # Verify: (d * e) % phi = 1
-  verification = (d * e) % phi
-  print(f"Verification: (d * e) mod φ(n) = {verification} (should be 1)")
+    print(f"\n✅ Public Key: (n={n}, e={e})")
+    print(f"✅ Private Key: (n={n}, d={d})")
 
-  # Public key: (n, e), Private key: (n, d)
-  public_key = (n, e)
-  private_key = (n, d)
-
-  print("\nPublic key (n, e) generated: ", public_key)
-  print("\nPrivate key (n, d) generated: ", private_key)
-
-  return public_key, private_key
+    return (n, e), (n, d)
 
 
-def sign_hash(hash_value, public_key):
-  """Sign a hash using RSA: S = H^d mod n."""
-  n, e = public_key
+def sign_hash(hash_value, private_key):
+    """Sign a hash using the RSA private key: S = H^d mod n."""
+    n, d = private_key
+    small_hash = hash_value % n  # Ensure hash fits in modulus
 
-  # For demonstration, we'll use a smaller hash to fit within our small n
-  # Take the hash modulo n
-  small_hash = hash_value % n
-  print(f"Original hash: {hash_value}")
-  print(f"Hash reduced modulo n: {small_hash}")
+    print(f"\n--- ✍️ Signing Hash ---")
+    print(f"🔹 Original Hash: {hash_value}")
+    print(f"🔹 Hash Reduced Modulo n: {small_hash}")
 
-  # Sign: S = H^d mod n
-  signature = pow(small_hash, e, n)
-  print(f"\n--- RSA Signing ---")
-  print(f"Signing hash mod n = {small_hash}")
-  print(
-      f"Signature = (Hash mod n)^d mod n = {small_hash}^{e} mod {n} = {signature}")
+    signature = pow(small_hash, d, n)
 
-  return signature, small_hash
+    print(f"🔹 Signature (H^d mod n): {signature}")
+
+    return signature, small_hash
 
 
-def verify_signature(signature, hash_mod_n, private_key):
-  """Verify a signature using RSA: H' = S^d mod n, then check if H' = H mod n."""
-  n, d = private_key
+def verify_signature(signature, hash_value, public_key):
+    """Verify the signature using the RSA public key: H' = S^e mod n."""
+    n, e = public_key
+    recovered_hash = pow(signature, e, n)
 
-  # Verify: H' = S^e mod n
-  recovered_hash = pow(signature, d, n)
-  print(f"\n--- RSA Verification ---")
-  print(f"Signature = {signature}")
-  print(
-      f"Recovered hash = Signature^d mod n = {signature}^{d} mod {n} = {recovered_hash}")
-  print(f"Original hash mod n = {hash_mod_n}")
+    print(f"\n--- ✅ Signature Verification ---")
+    print(f"🔹 Signature: {signature}")
+    print(f"🔹 Recovered Hash (S^e mod n): {recovered_hash}")
+    print(f"🔹 Original Hash Modulo n: {hash_value % n}")
 
-  # Verify that the verification was successful
-  if recovered_hash == hash_mod_n:
-    print("\nSignature verification successful! The recovered hash matches the original hash mod n.")
-  else:
-    print("\nSignature verification failed! The recovered hash does not match the original hash mod n.")
-
-  return recovered_hash
+    return recovered_hash == (hash_value % n)
 
 
 def main():
-  # Set input string to "Yahya"
-  input_string = "Yahya"
-  print(f"Using input string: {input_string}")
+    input_string = "Yahya"
+    print(f"\n📝 Input String: {input_string}")
 
-  # Step 1: Convert string to decimal
-  decimal = string_to_ascii(input_string)
-  print(f"\nStep 1: String to Decimal\n{decimal}")
+    decimal = string_to_ascii(input_string)
+    hash_value = sha256_hash(decimal)
 
-  # Step 2: Convert decimal to full SHA-256 hash
-  hash_value = sha256_hash(decimal)
-  print(f"\nStep 2: Decimal to full SHA-256 hash (as integer)\n{hash_value}")
-  print(f"SHA-256 hash bit length: {hash_value.bit_length()} bits")
+    public_key, private_key = generate_keys()
 
-  # Generate RSA keys with appropriate size
-  public_key, private_key = generate_keys()
-  n, _ = public_key
-  print(f"RSA modulus n bit length: {n.bit_length()} bits")
+    # Sign the hash
+    signature, hash_mod_n = sign_hash(hash_value, private_key)
+    print(f"\n🔹 Final Signature: {signature}")
 
-  # Step 3: Sign the hash value using RSA private key
-  signature, hash_mod_n = sign_hash(hash_value, public_key)
-  print(f"\nStep 3: Generated signature\n{signature}")
-
-  # Step 4: Verify the signature using RSA public key
-  recovered_hash = verify_signature(signature, hash_mod_n, private_key)
-
-  # Display original string for reference
-  print(f"\nOriginal string: {input_string}")
-  if recovered_hash == hash_mod_n:
-    print("The message was successfully signed and verified!")
-  else:
-    print("The message signing verification failed!")
+    # Verify the signature
+    if verify_signature(signature, hash_value, public_key):
+        print("\n✅ Signature verification successful! The message is authentic. 🎉")
+    else:
+        print("\n❌ Signature verification failed! 🚨")
 
 
 if __name__ == "__main__":
-  main()
+    main()

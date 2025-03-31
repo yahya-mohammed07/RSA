@@ -37,11 +37,9 @@ def generate_keys(key_size=2048):
   print("\n--- RSA Key Generation ---")
 
   # 1. Generate two large prime numbers p and q
-  print("Generating prime p...")
   p = generateLargePrime()
   print(f"p = {p}")
 
-  print("Generating prime q...")
   q = generateLargePrime()
   print(f"q = {q}")
 
@@ -66,8 +64,8 @@ def generate_keys(key_size=2048):
   print(f"Verification: (d * e) mod φ(n) = {verification} (should be 1)")
 
   # Public key: (n, e), Private key: (n, d)
-  public_key = (n, e)  # tuple
   private_key = (n, d)  # tuple
+  public_key = (n,  e) # tuple
 
   print("\nPublic key (n, e) generated: ", public_key)
   print("\nPrivate key (n, d) generated: ", private_key)
@@ -75,32 +73,32 @@ def generate_keys(key_size=2048):
   return public_key, private_key
 
 
-def encrypt(message, public_key):
+def encrypt(message, private_key):
   """Encrypt a message using RSA: C = M^e mod n."""
-  n, e = public_key
+  n, d = private_key
 
   # Check if message is smaller than n
   if message >= n:
     raise ValueError("Message is too large for the given key size")
 
   # Encrypt: C = M^e mod n
-  encrypted = pow(message, e, n)
-  print(f"\n--- RSA Encryption ---")
+  encrypted = pow(message, d, n)
+  print(f"\n--- signing ---")
   print(f"M = {message}")
-  print(f"C = M^e mod n = {message}^{e} mod {n} = {encrypted}")
+  print(f"C = M^d mod n = {message}^{d} mod {n} = {encrypted}")
 
   return encrypted
 
 
-def decrypt(ciphertext, private_key):
-  """Decrypt a message using RSA: M = C^d mod n."""
-  n, d = private_key
+def decrypt(ciphertext, public_key):
+  """verify a message using RSA: M = C^e mod n."""
+  n, e = public_key
 
-  # Decrypt: M = C^d mod n
-  decrypted = pow(ciphertext, d, n)
+  # Decrypt: M = C^e mod n
+  decrypted = pow(ciphertext, e, n)
   print(f"\n--- RSA Decryption ---")
   print(f"C = {ciphertext}")
-  print(f"M = C^d mod n = {ciphertext}^{d} mod {n} = {decrypted}")
+  print(f"M = C^e mod n = {ciphertext}^{e} mod {n} = {decrypted}")
 
   return decrypted
 
